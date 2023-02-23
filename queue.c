@@ -168,9 +168,16 @@ bool q_delete_dup(struct list_head *head)
         element_t *current_node = list_entry(current, element_t, list);
         element_t *Next_node = list_entry(Next, element_t, list);
 
-        if (strncmp(current_node->value, Next_node->value,
-                    strlen(current_node->value)) == 0) {
+        __uint8_t isdup = false;
+        while (strncmp(current_node->value, Next_node->value,
+                       strlen(current_node->value)) == 0) {
+            isdup = true;
             Next = Next->next;
+            if (Next == head)
+                break;
+            Next_node = list_entry(Next, element_t, list);
+        }
+        if (isdup) {
             while (current != Next) {
                 struct list_head *del = current;
                 current = current->next;
@@ -179,10 +186,9 @@ bool q_delete_dup(struct list_head *head)
                 free(del_node->value);
                 free(del_node);
             }
-        } else {
-            Next = Next->next;
-            current = current->next;
         }
+        current = current->next;
+        Next = current->next;
     }
 
     return true;
