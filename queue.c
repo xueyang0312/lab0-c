@@ -279,12 +279,11 @@ int q_descend(struct list_head *head)
     if (!head || list_empty(head))
         return 0;
 
-    for (struct list_head *current = head->next->next; current != head;
-         current = current->next) {
-        while (current->prev != head &&
-               strcmp(list_entry(current->prev, element_t, list)->value,
-                      list_entry(current, element_t, list)->value) < 0) {
-            struct list_head *del = current->prev;
+    for (struct list_head *tail = head->prev; tail != head; tail = tail->prev) {
+        while (tail->prev != head &&
+               strcmp(list_entry(tail->prev, element_t, list)->value,
+                      list_entry(tail, element_t, list)->value) < 0) {
+            struct list_head *del = tail->prev;
             list_del_init(del);
             q_release_element(list_entry(del, element_t, list));
         }
