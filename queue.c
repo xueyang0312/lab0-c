@@ -257,7 +257,7 @@ void q_sort(struct list_head *head)
     list_del(&pivot->list);
 
     list_for_each_entry_safe (item, safe, head, list) {
-        if ((item->value - pivot->value) < 0)
+        if (strcmp(item->value, pivot->value) < 0)
             list_move_tail(&item->list, &list_less);
         else
             list_move_tail(&item->list, &list_greater);
