@@ -212,22 +212,10 @@ void q_reverse(struct list_head *head)
     if (!head || list_empty(head))
         return;
 
-    struct list_head *current = head->next;
-    struct list_head *last = head->prev;
+    struct list_head *current, *safe;
 
-    while (current != last) {
-        element_t *current_node = list_entry(current, element_t, list);
-        element_t *last_node = list_entry(last, element_t, list);
-
-        char *temp = current_node->value;
-        current_node->value = last_node->value;
-        last_node->value = temp;
-
-        if (current->next == last)
-            break;
-
-        current = current->next;
-        last = last->prev;
+    list_for_each_safe (current, safe, head) {
+        list_move(current, head);
     }
 }
 
