@@ -241,34 +241,45 @@ void q_reverseK(struct list_head *head, int k)
     }
 }
 
+/* Merge two sorted list */
+void Merge(struct list_head *l, struct list_head *r)
+{
+    if (!l || !r)
+        return;
+
+    LIST_HEAD(temp_head);
+
+    while (!list_empty(l) && !list_empty(r)) {
+        element_t *l_front = list_first_entry(l, element_t, list);
+        element_t *r_front = list_first_entry(r, element_t, list);
+        element_t *node =
+            strcmp(l_front->value, r_front->value) < 0 ? l_front : r_front;
+        list_move_tail(&node->list, &temp_head);
+    }
+
+    list_splice_tail_init(l, &temp_head);
+    list_splice_tail_init(r, &temp_head);
+    list_splice(&temp_head, l);
+}
+
 /* Sort elements of queue in ascending order */
 void q_sort(struct list_head *head)
 {
-    struct list_head list_less, list_greater;
-    element_t *pivot, *item, *safe;
-
-    if (list_empty(head) || list_is_singular(head))
+    if (!head || list_empty(head) || list_is_singular(head))
         return;
+    struct list_head *slow = head, *fast = head->next;
 
-    INIT_LIST_HEAD(&list_less);
-    INIT_LIST_HEAD(&list_greater);
-
-    pivot = list_first_entry(head, element_t, list);
-    list_del(&pivot->list);
-
-    list_for_each_entry_safe (item, safe, head, list) {
-        if (strcmp(item->value, pivot->value) < 0)
-            list_move_tail(&item->list, &list_less);
-        else
-            list_move_tail(&item->list, &list_greater);
+    while (fast->next != head && fast != head) {
+        slow = slow->next;
+        fast = fast->next->next;
     }
 
-    q_sort(&list_less);
-    q_sort(&list_greater);
+    struct list_head left;
+    list_cut_position(&left, head, slow);
 
-    list_add(&pivot->list, head);
-    list_splice(&list_less, head);
-    list_splice_tail(&list_greater, head);
+    q_sort(&left);
+    q_sort(head);
+    Merge(head, &left);
 }
 
 /* Remove every node which has a node with a strictly greater value anywhere to
@@ -296,5 +307,17 @@ int q_descend(struct list_head *head)
 int q_merge(struct list_head *head)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
-    return 0;
+    if (!head)
+        return 0;
+
+    LIST_HEAD(head2);
+    queue_contex_t *tmp;
+
+    list_for_each_entry (tmp, head, chain) {
+        list_splice_init(tmp->q, &head2);
+    }
+
+
+    int size = q_size(&head2);
+    return size;
 }
