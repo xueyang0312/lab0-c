@@ -242,10 +242,10 @@ void q_reverseK(struct list_head *head, int k)
 }
 
 /* Merge two sorted list */
-void Merge(struct list_head *l, struct list_head *r)
+int Merge(struct list_head *l, struct list_head *r)
 {
     if (!l || !r)
-        return;
+        return 0;
 
     LIST_HEAD(temp_head);
 
@@ -260,6 +260,7 @@ void Merge(struct list_head *l, struct list_head *r)
     list_splice_tail_init(l, &temp_head);
     list_splice_tail_init(r, &temp_head);
     list_splice(&temp_head, l);
+    return q_size(l);
 }
 
 /* Sort elements of queue in ascending order */
@@ -307,17 +308,23 @@ int q_descend(struct list_head *head)
 int q_merge(struct list_head *head)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
-    if (!head)
+    if (!head || list_empty(head))
         return 0;
+    if (list_is_singular(head))
+        return q_size(list_first_entry(head, queue_contex_t, chain)->q);
 
-    LIST_HEAD(head2);
-    queue_contex_t *tmp;
+    int size = 0;
 
-    list_for_each_entry (tmp, head, chain) {
-        list_splice_init(tmp->q, &head2);
+    queue_contex_t *first, *second;
+    first = list_first_entry(head, queue_contex_t, chain);
+    second = list_entry(first->chain.next, queue_contex_t, chain);
+
+    while (!list_empty(second->q)) {
+        // second queue will be merge to first queue
+        size = Merge(first->q, second->q);
+        list_move_tail(&second->chain, head);
+        second = list_entry(first->chain.next, queue_contex_t, chain);
     }
 
-
-    int size = q_size(&head2);
     return size;
 }
